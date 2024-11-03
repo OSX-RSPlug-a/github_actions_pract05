@@ -57,8 +57,8 @@ jobs:
 
       - uses: Azure/aks-set-context@v4
         with:
-          cluster-name: aks-dojo-avanade
-          resource-group: rg-dojo-avanade          
+          cluster-name: aks-dojo-gitlearn
+          resource-group: rg-dojo-gitlearn          
 
       - uses: Azure/k8s-create-secret@v5
         with:
