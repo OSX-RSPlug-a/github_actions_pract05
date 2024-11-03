@@ -1,0 +1,52 @@
+name: .NET CI Reusable
+
+on:
+  workflow_call: 
+    inputs:
+      app-path: 
+        type: string
+        required: true
+      package-type:
+        type: string
+        required: true
+        description: "package ou publish"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest    
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+          dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore ${{ inputs.app-path }}
+
+    - name: Build
+      run: dotnet build ${{ inputs.app-path }} --no-restore --configuration Release
+
+    - name: Test
+      run: dotnet test ${{ inputs.app-path }} --no-build --verbosity normal --configuration Release
+
+    - name: Publish
+      if: ${{ inputs.package-type == 'publish' }}
+      run: |
+        dotnet publish ${{ inputs.app-path }} --no-build --configuration Release --output ./output      
+        cp ${{ inputs.app-path }}/Dockerfile ./output
+        cp -R ${{ inputs.app-path }}/manifests ./output
+
+    - name: Pack
+      if: ${{ inputs.package-type == 'package' }}
+      run: dotnet pack ${{ inputs.app-path }} --no-build --configuration Release --output ./output 
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-artifact
+        path: ./output
+

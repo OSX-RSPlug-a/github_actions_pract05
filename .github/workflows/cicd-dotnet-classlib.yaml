@@ -1,0 +1,32 @@
+name: .NET CI/CD Classlib
+
+on:
+  
+  workflow_dispatch: 
+  push:    
+    paths:
+      - 'src-dotnet-classlib/**'
+
+jobs:
+  call-build:
+    uses: ./.github/workflows/reusable-ci-dotnet.yaml
+    with:
+      app-path: ./src-dotnet-classlib
+      package-type: "package"
+
+  deploy: 
+    needs: call-build
+    runs-on: ubuntu-latest      
+    permissions: 
+      contents: read
+      packages: write
+    steps: 
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifact
+          path: output
+
+#      - name: Publish to GitHub Packages
+#        run: dotnet nuget push ./output/*.nupkg --source https://nuget.pkg.github.com/OSX-RSPlug-a/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
